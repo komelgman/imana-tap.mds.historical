@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Code Quality Check
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  java-ci-with-maven:
+    name: Java CI with Maven
     runs-on: ubuntu-latest
 
     steps:
