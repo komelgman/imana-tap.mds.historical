@@ -1,0 +1,18 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,metrics
+
+  endpoint:
+    health:
+      show-details: never
+
+  tracing:
+    sampling:
+      probability: 0.1
+
+logging:
+  level:
+    root: INFO
+    com.imanai.tap.mds.historical: INFO
