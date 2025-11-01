@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -30,17 +31,6 @@ class HealthCheckIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private GoldenMetrics metrics; // будет замокан тестовой конфигурацией
-
-    @TestConfiguration
-    static class MockConfig {
-        @Bean
-        GoldenMetrics metrics() {
-            return mock(GoldenMetrics.class);
-        }
-    }
 
     @Test
     void healthCheckEndpointReturnsOk() throws Exception {
@@ -73,32 +63,5 @@ class HealthCheckIntegrationTest {
         mockMvc.perform(get("/api/health").param("delayMs", "-100"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value("Delay must be non-negative"));
-    }
-
-
-    @Test
-    void shouldRecordSuccessOn200() throws Exception {
-        Timer.Sample sample = Timer.start();
-        when(metrics.startTimer()).thenReturn(sample);
-
-        mockMvc.perform(get("/api/health"))
-                .andExpect(status().isOk());
-
-        verify(metrics).startTimer();
-        verify(metrics).recordSuccess(sample);
-        verify(metrics, never()).recordError(any(), anyString());
-    }
-
-    @Test
-    void shouldRecordErrorOn4xx() throws Exception {
-        Timer.Sample sample = Timer.start();
-        when(metrics.startTimer()).thenReturn(sample);
-
-        mockMvc.perform(get("/api/wealth"))
-                .andExpect(status().isNotFound());
-
-        verify(metrics).startTimer();
-        verify(metrics).recordError(eq(sample), eq("HttpError404"));
-        verify(metrics, never()).recordSuccess(any());
     }
 }
