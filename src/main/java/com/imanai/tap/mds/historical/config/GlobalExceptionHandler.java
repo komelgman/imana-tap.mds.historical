@@ -30,29 +30,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         this.metrics = metrics;
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ProblemDetail> handleRuntimeException(
-            RuntimeException ex,
-            HttpServletRequest request) {
-
-        log.error("Runtime exception occurred", ex);
-
-        recordExceptionInSpan(ex);
-        recordErrorMetrics(request, ex);
-
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage() != null ? ex.getMessage() : "Internal server error"
-        );
-        problem.setTitle("Runtime Error");
-        problem.setProperty("timestamp", Instant.now());
-        problem.setProperty("traceId", getCurrentTraceId());
-
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(problem);
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ProblemDetail> handleIllegalArgument(
             IllegalArgumentException ex,
@@ -76,6 +53,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(problem);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ProblemDetail> handleRuntimeException(
+            RuntimeException ex,
+            HttpServletRequest request) {
+
+        log.error("Runtime exception occurred", ex);
+
+        recordExceptionInSpan(ex);
+        recordErrorMetrics(request, ex);
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred"
+        );
+
+        problem.setTitle("Internal Server Error");
+        problem.setProperty("timestamp", Instant.now());
+        problem.setProperty("traceId", getCurrentTraceId());
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(problem);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleGenericException(
             Exception ex,
@@ -88,7 +89,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred"
+                ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred"
         );
         problem.setTitle("Internal Server Error");
         problem.setProperty("timestamp", Instant.now());

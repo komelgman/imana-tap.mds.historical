@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.naming.OperationNotSupportedException;
+
 @RestController
 @RequestMapping("/api/health")
 class HealthCheckController {
@@ -43,6 +45,16 @@ class HealthCheckController {
                 healthCheckService.getDatabaseStatus(),
                 System.currentTimeMillis()
         );
+    }
+
+    @GetMapping("/exceptions/runtime")
+    public HealthDetailsResponse runtimeException() {
+        throw new RuntimeException("For testing purpose");
+    }
+
+    @GetMapping("/exceptions/generic")
+    public HealthDetailsResponse genericException() throws OperationNotSupportedException {
+        throw new OperationNotSupportedException("For testing purpose");
     }
 
     record HealthDetailsResponse(

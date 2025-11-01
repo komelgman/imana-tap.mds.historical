@@ -64,4 +64,20 @@ class HealthCheckIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detail").value("Delay must be non-negative"));
     }
+
+    @Test
+    void runtimeExceptionHandledProperly() throws Exception {
+        mockMvc.perform(get("/api/health/exceptions/runtime"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.title").value("Internal Server Error"))
+                .andExpect(jsonPath("$.detail").value("For testing purpose"));
+    }
+
+    @Test
+    void genericExceptionHandledProperly() throws Exception {
+        mockMvc.perform(get("/api/health/exceptions/generic"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.title").value("Internal Server Error"))
+                .andExpect(jsonPath("$.detail").value("For testing purpose"));
+    }
 }
