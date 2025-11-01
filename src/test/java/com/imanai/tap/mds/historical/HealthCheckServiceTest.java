@@ -7,7 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class HealthCheckServiceTest {
@@ -34,5 +36,16 @@ class HealthCheckServiceTest {
         String result = healthCheckService.getDatabaseStatus();
         
         assertEquals("Service OK, DB: CONNECTION_FAILURE", result);
+    }
+
+    @Test
+    void getDatabaseStatusThrowsWhenRepositoryFails() {
+        doThrow(new RuntimeException("Database connection failed"))
+            .when(healthCheckRepository).checkDatabase();
+        
+        Exception exception = assertThrows(RuntimeException.class,
+            () -> healthCheckService.getDatabaseStatus());
+        
+        assertEquals("Database connection failed", exception.getMessage());
     }
 }
