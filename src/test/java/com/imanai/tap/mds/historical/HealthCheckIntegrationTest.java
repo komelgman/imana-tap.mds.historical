@@ -30,7 +30,7 @@ class HealthCheckIntegrationTest {
     void detailedHealthCheckReturnsValidResponse() throws Exception {
         mockMvc.perform(get("/api/health/detailed"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.databaseStatus").value("SIMULATED_OK"))
+                .andExpect(jsonPath("$.databaseStatus").value("Service OK, DB: SIMULATED_OK"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
@@ -49,6 +49,6 @@ class HealthCheckIntegrationTest {
     void healthCheckWithNegativeDelayReturnsBadRequest() throws Exception {
         mockMvc.perform(get("/api/health").param("delayMs", "-100"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Delay must be non-negative"));
+                .andExpect(jsonPath("$.detail").value("Delay must be non-negative"));
     }
 }
