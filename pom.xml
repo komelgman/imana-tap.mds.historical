@@ -17,7 +17,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>25</java.version>
+        <java.version>24</java.version>
 
         <sonar.organization>imanai</sonar.organization>
         <sonar.projectKey>imanai-tap.mds.historical</sonar.projectKey>
@@ -30,6 +30,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <layers enabled="true"/>
+                    <finalName>application</finalName>
+                </configuration>
             </plugin>
 
             <plugin>
