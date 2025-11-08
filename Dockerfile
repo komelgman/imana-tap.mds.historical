@@ -1,11 +1,12 @@
-FROM maven:3.9-eclipse-temurin-25 AS builder
+FROM maven:3.9.11-eclipse-temurin-25 AS builder
 WORKDIR /app
 
 COPY pom.xml ./
-RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline
+RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline -B
 
 COPY src/ ./src/
-RUN mvn clean package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests -B
+
 RUN mkdir -p target/extracted
 RUN java -Djarmode=tools -jar target/application.jar extract --destination target/extracted
 
@@ -33,6 +34,6 @@ COPY --from=builder /app/target/extracted/lib/ ./lib/
 COPY --from=builder /app/target/extracted/application.jar ./application.jar
 
 ENV JAVA_HOME=/jre \
-    PATH=/jre/bin:$PATH
+    PATH=/jre/bin:$
 
 ENTRYPOINT ["java", "-jar", "application.jar"]
