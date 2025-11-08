@@ -3,7 +3,6 @@ package com.imanai.tap.mds.historical.config;
 import com.imanai.tap.mds.historical.exceptions.HasCategory;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,9 +20,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    private static final String UNEXPECTED_ERROR = "An unexpected error occurred";
     private static final String TIMESTAMP = "timestamp";
     private static final String TRACE_ID = "traceId";
+    private static final String SPAN_ID = "spanId";
+    private static final String UNKNOWN = "unknown";
 
     private final Tracer tracer;
 
@@ -32,60 +32,50 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("Invalid argument: {}", ex.getMessage());
 
-        recordExceptionInSpan(ex);
-
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage() != null ? ex.getMessage() : UNEXPECTED_ERROR
-        );
-
-        problem.setTitle("Invalid Request");
-        problem.setProperty(TIMESTAMP, Instant.now());
-        problem.setProperty(TRACE_ID, getCurrentTraceId());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(createProblemDetail(ex, HttpStatus.BAD_REQUEST, "Invalid Request"));
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ProblemDetail> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleRuntimeException(RuntimeException ex) {
         log.error("Runtime exception occurred", ex);
 
-        recordExceptionInSpan(ex);
-
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage() != null ? ex.getMessage() : UNEXPECTED_ERROR
-        );
-
-        problem.setTitle("Internal Server Error");
-        problem.setProperty(TIMESTAMP, Instant.now());
-        problem.setProperty(TRACE_ID, getCurrentTraceId());
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(createProblemDetail(ex, HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ProblemDetail> handleGenericException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleGenericException(Exception ex) {
         log.error("Unexpected exception occurred", ex);
 
-        recordExceptionInSpan(ex);
-
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
-        problem.setTitle("Internal Server Error");
-        problem.setProperty("timestamp", Instant.now());
-        problem.setProperty("traceId", getCurrentTraceId());
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(createProblemDetail(ex, HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
     }
 
-    private void recordExceptionInSpan(Exception ex) {
+    private ProblemDetail createProblemDetail(Exception ex, HttpStatus status, String title) {
+        String spanId = recordExceptionInSpan(ex);
+
+        String detail = ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred";
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
+
+        problem.setTitle(title);
+        problem.setProperty(TIMESTAMP, Instant.now());
+        problem.setProperty(TRACE_ID, getCurrentTraceId());
+        problem.setProperty(SPAN_ID, spanId);
+
+        return problem;
+    }
+
+    private String recordExceptionInSpan(Exception ex) {
         Span currentSpan = tracer.currentSpan();
         if (currentSpan == null) {
-            return;
+            return UNKNOWN;
         }
 
         currentSpan.error(ex);
@@ -101,10 +91,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (ex instanceof HasCategory hasCategory) {
             currentSpan.tag("error.category", hasCategory.getCategory());
         }
+
+        return currentSpan.context().spanId();
     }
 
     private String getCurrentTraceId() {
         Span currentSpan = tracer.currentSpan();
-        return currentSpan != null ? currentSpan.context().traceId() : "unknown";
+        return currentSpan != null ? currentSpan.context().traceId() : UNKNOWN;
     }
 }
