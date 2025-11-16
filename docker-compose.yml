@@ -1,0 +1,24 @@
+name: imanai-tap-bounded-services
+
+services:
+  mds-historical:
+    build:
+      dockerfile: Dockerfile
+    image: iamani-tap/bounded-contexts/mds-historical:latest
+    container_name: mds-historical
+    labels:
+      service_type: application
+    ports:
+      - "8080:8080"
+      - "15005:5005"   # JDWP debug
+    environment:
+      - SPRING_PROFILES_ACTIVE=compose
+      - ENV=compose
+      - OTLP_TRACING_ENDPOINT=http://alloy:4318/v1/traces
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    networks:
+      - imanai-tap
+
+networks:
+  imanai-tap:
+    external: true
