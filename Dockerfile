@@ -5,14 +5,21 @@ FROM maven:${MAVEN_VERSION}-eclipse-temurin-${JAVA_VERSION} AS builder
 WORKDIR /app
 
 ARG JAVA_VERSION=25
-ENV JAVA_VERSION=${JAVA_VERSION}
+ARG GH_USERNAME
+ARG GH_PACKAGES_READ_TOKEN
+
+ENV JAVA_VERSION=${JAVA_VERSION} \
+    GH_USERNAME=${GH_USERNAME} \
+    GH_PACKAGES_READ_TOKEN=${GH_PACKAGES_READ_TOKEN}
+
+COPY .github/workflows/settings.xml /root/.m2/settings.xml
 
 COPY pom.xml ./
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,target=/root/.m2/repository \
     mvn dependency:go-offline -B
 
 COPY src/ ./src/
-RUN --mount=type=cache,target=/root/.m2 \
+RUN --mount=type=cache,target=/root/.m2/repository \
     mvn clean package -DskipTests -B
 
 RUN mkdir -p target/extracted

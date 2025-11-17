@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
+        <groupId>io.github.komelgman.tap</groupId>
+        <artifactId>platform-parent</artifactId>
+        <version>1.0.4</version>
     </parent>
 
     <groupId>com.imanai.tap</groupId>
@@ -15,9 +15,6 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>25</java.version>
-
         <app.name>${project.artifactId}</app.name>
         <app.version>${project.version}</app.version>
 
@@ -32,16 +29,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <layers enabled="true"/>
-                    <finalName>application</finalName>
-                </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.6.0</version>
 
                 <configuration>
                     <configLocation>custom_google_checks.xml</configLocation>
@@ -49,58 +41,16 @@
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                 </configuration>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>12.1.1</version>
-                    </dependency>
-                </dependencies>
-
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.13</version>
-                <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <phase>initialize</phase>
-                    </execution>
-
-                    <execution>
-                        <id>report</id>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                        <phase>verify</phase>
-                        <configuration>
-                            <formats>
-                                <format>XML</format>
-                            </formats>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>5.2.0.4988</version>
             </plugin>
         </plugins>
 
@@ -154,7 +104,6 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>8.0</version>
         </dependency>
 
         <!-- Test -->
@@ -166,6 +115,12 @@
     </dependencies>
 
     <repositories>
+        <repository>
+            <id>github-tap-platform</id>
+            <name>TAP Platform Packages</name>
+            <url>https://maven.pkg.github.com/komelgman/imanai-tap.platform</url>
+        </repository>
+
         <repository>
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
