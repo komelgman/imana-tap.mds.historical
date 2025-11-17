@@ -39,8 +39,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GH_USERNAME: ${{ github.actor }}
           GH_PACKAGES_READ_TOKEN: ${{ secrets.GH_PACKAGES_READ_TOKEN }}
-        run: |
-          echo "GH_USERNAME=$GH_USERNAME"
-          echo "GH_PACKAGES_READ_TOKEN length: ${#GH_PACKAGES_READ_TOKEN}"
-          ./mvnw help:effective-settings -s .github/workflows/settings.xml | grep -A 5 "github-tap-platform"
+        run: ./mvnw -B -s .github/workflows/settings.xml clean verify sonar:sonar
 
