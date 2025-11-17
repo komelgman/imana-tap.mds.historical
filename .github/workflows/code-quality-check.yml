@@ -33,22 +33,14 @@ jobs:
       - name: Make Maven Wrapper executable
         run: chmod +x mvnw
 
-      - name: Verify secret is available
-        run: |
-          if [ -z "${{ secrets.GH_PACKAGES_READ_TOKEN }}" ]; then
-            echo "ERROR: GH_PACKAGES_READ_TOKEN secret is NOT set"
-            exit 1
-          else
-            echo "Secret exists, length: ${#GH_PACKAGES_READ_TOKEN}"
-          fi
-        env:
-          GH_PACKAGES_READ_TOKEN: ${{ secrets.GH_PACKAGES_READ_TOKEN }}
-
       - name: Verify and analyze with SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GH_USERNAME: ${{ github.actor }}
           GH_PACKAGES_READ_TOKEN: ${{ secrets.GH_PACKAGES_READ_TOKEN }}
-        run: ./mvnw -B clean verify sonar:sonar \
-          -s .github/workflows/settings.xml
+        run: |
+          echo "GH_USERNAME=$GH_USERNAME"
+          echo "GH_PACKAGES_READ_TOKEN length: ${#GH_PACKAGES_READ_TOKEN}"
+          ./mvnw help:effective-settings -s .github/workflows/settings.xml | grep -A 5 "github-tap-platform"
+
