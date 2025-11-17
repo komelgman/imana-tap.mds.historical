@@ -4,6 +4,9 @@ services:
   mds-historical:
     build:
       dockerfile: Dockerfile
+      args:
+        - GITHUB_USERNAME=${GITHUB_USERNAME}
+        - GITHUB_PAT=${GITHUB_PAT}
     image: iamani-tap/bounded-contexts/mds-historical:latest
     container_name: mds-historical
     labels:
