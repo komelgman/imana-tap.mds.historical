@@ -12,6 +12,8 @@ buildNumber.properties
 
 # IDE
 .idea/
+!.idea/codeStyles/
+!.idea/codeStyles/*.xml
 *.iml
 *.ipr
 *.iws
