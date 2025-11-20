@@ -1,19 +1,21 @@
-name: imanai-tap-bounded-services
+name: imanai-tap-services
 
 services:
-  mds-historical:
+  ${newServiceName}:
     build:
       dockerfile: Dockerfile
       args:
-        - GITHUB_USERNAME=${GITHUB_USERNAME}
-        - GITHUB_PAT=${GITHUB_PAT}
-    image: iamani-tap/bounded-contexts/mds-historical:latest
-    container_name: mds-historical
+        - GH_USERNAME=${GH_USERNAME}
+        - GH_PACKAGES_READ_TOKEN=${GH_PACKAGES_READ_TOKEN}
+
+    image: ghcr.io/${newRepo}:latest
+    container_name: ${newServiceName}
     labels:
       service_type: application
-    ports:
-      - "8080:8080"
-      - "15005:5005"   # JDWP debug
+      logger: loki
+#    ports:
+#      - "8080:8080"
+#      - "15005:5005"   # JDWP debug
     environment:
       - SPRING_PROFILES_ACTIVE=compose
       - ENV=compose
