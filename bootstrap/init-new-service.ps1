@@ -16,6 +16,8 @@ $NewServiceName = Split-Path $TargetDir -Leaf
 $NewRepo = (git remote get-url origin) -replace '.*github\.com[:/](.+)/(.+)\.git', '$1/$2'
 
 $fileCount = 0
+$resolvedSourceDir = (Resolve-Path $SourceDir).Path
+$resolvedTargetDir = (Resolve-Path $TargetDir).Path
 
 Get-ChildItem -Path $SourceDir -File -Recurse | ForEach-Object {
     $sourceFile = $_
@@ -25,8 +27,14 @@ Get-ChildItem -Path $SourceDir -File -Recurse | ForEach-Object {
     $content = $content -replace '\$\{newRepo\}', $NewRepo
     $content = $content -replace '\$\{currentParentPomVersion\}', $ParentPomVersion
 
-    $relativePath = $sourceFile.FullName.Substring((Resolve-Path $SourceDir).Path.Length).TrimStart('\', '/')
-    $targetPath = Join-Path (Resolve-Path $TargetDir) $relativePath
+    $relativePath = $sourceFile.FullName.Substring($resolvedSourceDir.Length).TrimStart('\', '/')
+    $targetPath = Join-Path $resolvedTargetDir $relativePath
+
+    $targetDirectory = Split-Path $targetPath -Parent
+    if (-not (Test-Path $targetDirectory)) {
+        New-Item -ItemType Directory -Path $targetDirectory -Force | Out-Null
+        Write-Host "  [DIR] Created: $($targetDirectory.Substring($resolvedTargetDir.Length).TrimStart('\', '/'))" -ForegroundColor Cyan
+    }
 
     [System.IO.File]::WriteAllText($targetPath, $content, [System.Text.Encoding]::UTF8)
 
