@@ -2,24 +2,24 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$ParentPomVersion,
 
-    [string]$SourceDir = "./bootstrap/templates",
+    [string]$TemplatesDir = "./bootstrap/templates",
     [string]$TargetDir = "."
 )
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Test-Path $SourceDir)) {
-    throw "Source directory not found: $SourceDir"
+if (-not (Test-Path $TemplatesDir)) {
+    throw "Source directory not found: $TemplatesDir"
 }
 
 $NewServiceName = Split-Path $TargetDir -Leaf
 $NewRepo = (git remote get-url origin) -replace '.*github\.com[:/](.+)/(.+)\.git', '$1/$2'
 
 $fileCount = 0
-$resolvedSourceDir = (Resolve-Path $SourceDir).Path
+$resolvedSourceDir = (Resolve-Path $TemplatesDir).Path
 $resolvedTargetDir = (Resolve-Path $TargetDir).Path
 
-Get-ChildItem -Path $SourceDir -File -Recurse | ForEach-Object {
+Get-ChildItem -Path $TemplatesDir -File -Recurse | ForEach-Object {
     $sourceFile = $_
     $content = Get-Content $sourceFile.FullName -Raw -Encoding UTF8
 
@@ -44,3 +44,8 @@ Get-ChildItem -Path $SourceDir -File -Recurse | ForEach-Object {
 
 Write-Host ""
 Write-Host "Successfully processed $fileCount file(s)" -ForegroundColor Green
+
+if (Test-Path $TemplatesDir) {
+    Remove-Item $TemplatesDir -Recurse -Force
+    Write-Host "Source templates directory removed: $TemplatesDir" -ForegroundColor Yellow
+}
