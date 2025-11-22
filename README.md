@@ -1,14 +1,16 @@
-### **Historical Subsystem**
+### **imanai TAP service template project**
 
-**Description:**
-The Historical Subsystem of the Market Data System provides reliable access to aggregated historical market data for trading and analytical purposes. It stores time-series data such as OHLCV (Open, High, Low, Close, Volume) across multiple intervals and assets, enabling backtesting, research, and trend analysis.
+This repository provides the template project used for creating new services in the Imanai TAP platform.
 
-**Key Features:**
+**Prerequisites:**
 
-* Collection and storage of historical OHLCV data from multiple data providers.
-* Normalization of timestamps and price formats.
-* Backfill and reconciliation for missing or inconsistent historical data.
-* Query interface for integration with analytics modules and visualization tools.
+- Git must be installed and available in your system’s PATH.
 
-**Purpose:**
-Serve as the authoritative source of historical market data for analytics, modeling, and visualization within the Trading Analytics Platform.
+To create a new service, run the bootstrap script located in [imanai-tap.platform](https://github.com/komelgman/imanai-tap.platform/tree/main), specifying the desired service name. For example:
+
+```shell
+./bootstrap/new-service.sh my-new-service
+```
+
+The script will generate a fully initialized project based on this template.
+After generation, follow the instructions in the newly created service’s README to complete the setup and continue development.
